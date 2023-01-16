@@ -55,6 +55,7 @@ async function onSubmit(event) {
     gallery.innerHTML = '';
     renderGallery(images);
     loadMoreBtn.classList.remove('hidden');
+    smoothScroll();
   } catch (error) {
     console.log(error.message);
   }
@@ -81,6 +82,7 @@ async function onLoadMore(event) {
     const response = await fetchImages(value, perPage, page);
     const { hits: images } = response;
     renderGallery(images);
+    smoothScroll();
   } catch (error) {
     console.log(error.message);
   }
@@ -125,4 +127,15 @@ function renderGallery(images) {
   );
 
   gallery.insertAdjacentHTML('beforeend', markup);
+}
+
+function smoothScroll() {
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
 }
