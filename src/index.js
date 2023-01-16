@@ -54,8 +54,9 @@ async function onSubmit(event) {
 
     gallery.innerHTML = '';
     renderGallery(images);
+
+    if (pages === 1) return;
     loadMoreBtn.classList.remove('hidden');
-    smoothScroll();
   } catch (error) {
     console.log(error.message);
   }
