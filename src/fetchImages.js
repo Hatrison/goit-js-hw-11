@@ -1,4 +1,4 @@
-export default async function fetchImages(req) {
+export default async function fetchImages(req, perPage, page) {
   const BASE_URL = 'https://pixabay.com/api/';
 
   const params = new URLSearchParams({
@@ -7,6 +7,8 @@ export default async function fetchImages(req) {
     image_type: 'photo',
     orientation: 'horizontal',
     safesearch: true,
+    per_page: perPage,
+    page,
   });
   console.log(`${BASE_URL}?${params}`);
 

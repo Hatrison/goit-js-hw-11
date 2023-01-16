@@ -8,10 +8,17 @@ import fetchImages from './fetchImages.js';
 
 const form = document.querySelector('#search-form');
 const gallery = document.querySelector('.gallery');
+const loadMoreBtn = document.querySelector('.load-more-btn');
+localStorage.setItem('input-value', '');
+const perPage = 40;
+let page = 1;
+let pages = 1;
 
 form.addEventListener('submit', onSubmit);
 
 gallery.addEventListener('click', onClick);
+
+loadMoreBtn.addEventListener('click', onLoadMore);
 
 async function onSubmit(event) {
   event.preventDefault();
@@ -25,14 +32,32 @@ async function onSubmit(event) {
     return;
   }
 
+  if (value === localStorage.getItem('input-value')) {
+    Notify.warning('Please, insert another search request!');
+    return;
+  }
+
+  localStorage.setItem('input-value', `${value}`);
+  page = 1;
+
   try {
-    const response = await fetchImages(value);
-    renderGallery(response);
+    const response = await fetchImages(value, perPage, page);
+
+    const { hits: images, totalHits } = response;
+    if (!images.length) {
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+      return;
+    }
+    pages = Math.ceil(totalHits / perPage);
+
+    gallery.innerHTML = '';
+    renderGallery(images);
+    loadMoreBtn.classList.remove('hidden');
   } catch (error) {
     console.log(error.message);
   }
-
-  console.log(value);
 }
 
 function onClick(event) {
@@ -46,15 +71,28 @@ function onClick(event) {
   });
 }
 
-function renderGallery({ hits }) {
-  if (!hits.length) {
-    Notify.failure(
-      'Sorry, there are no images matching your search query. Please try again.'
-    );
-    return;
+async function onLoadMore(event) {
+  const value = localStorage.getItem('input-value');
+
+  if (page < pages) page++;
+  console.log(page, pages);
+
+  try {
+    const response = await fetchImages(value, perPage, page);
+    const { hits: images } = response;
+    renderGallery(images);
+  } catch (error) {
+    console.log(error.message);
   }
 
-  const markup = hits.reduce(
+  if (page === pages) {
+    Notify.info("We're sorry, but you've reached the end of search results.");
+    loadMoreBtn.classList.add('hidden');
+  }
+}
+
+function renderGallery(images) {
+  const markup = images.reduce(
     (
       acc,
       { webformatURL, largeImageURL, tags, likes, views, comments, downloads }
