@@ -96,7 +96,6 @@ async function onInfinityLoad(entries, observer) {
       }
 
       if (page < pages) page++;
-      console.log(page, pages);
 
       try {
         const response = await fetchImages(value, perPage, page);
