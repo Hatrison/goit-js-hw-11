@@ -1,4 +1,3 @@
-const axios = require('axios');
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import 'notiflix/dist/notiflix-3.2.6.min.css';
 import SimpleLightbox from 'simplelightbox';
@@ -58,7 +57,7 @@ async function onSubmit(event) {
     if (pages === 1) return;
     loadMoreBtn.classList.remove('hidden');
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
   }
 }
 
