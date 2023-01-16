@@ -7,17 +7,27 @@ import fetchImages from './fetchImages.js';
 
 const form = document.querySelector('#search-form');
 const gallery = document.querySelector('.gallery');
+const guard = document.querySelector('.js-guard');
 const loadMoreBtn = document.querySelector('.load-more-btn');
-localStorage.setItem('input-value', '');
 const perPage = 40;
 let page = 1;
 let pages = 1;
+
+localStorage.setItem('input-value', '');
+
+const options = {
+  root: null,
+  rootMatgin: '320px',
+  treshold: 1.0,
+};
+
+const observer = new IntersectionObserver(onInfinityLoad, options);
 
 form.addEventListener('submit', onSubmit);
 
 gallery.addEventListener('click', onClick);
 
-loadMoreBtn.addEventListener('click', onLoadMore);
+// loadMoreBtn.addEventListener('click', onLoadMore);
 
 async function onSubmit(event) {
   event.preventDefault();
@@ -55,7 +65,8 @@ async function onSubmit(event) {
     renderGallery(images);
 
     if (pages === 1) return;
-    loadMoreBtn.classList.remove('hidden');
+    observer.observe(guard);
+    // loadMoreBtn.classList.remove('hidden');
   } catch (error) {
     console.log(error);
   }
@@ -72,26 +83,51 @@ function onClick(event) {
   });
 }
 
-async function onLoadMore(event) {
+async function onInfinityLoad(entries, observer) {
   const value = localStorage.getItem('input-value');
 
-  if (page < pages) page++;
-  console.log(page, pages);
+  entries.forEach(async entry => {
+    if (entry.isIntersecting) {
+      if (page === pages) {
+        Notify.info(
+          "We're sorry, but you've reached the end of search results."
+        );
+        return;
+      }
 
-  try {
-    const response = await fetchImages(value, perPage, page);
-    const { hits: images } = response;
-    renderGallery(images);
-    smoothScroll();
-  } catch (error) {
-    console.log(error.message);
-  }
+      if (page < pages) page++;
+      console.log(page, pages);
 
-  if (page === pages) {
-    Notify.info("We're sorry, but you've reached the end of search results.");
-    loadMoreBtn.classList.add('hidden');
-  }
+      try {
+        const response = await fetchImages(value, perPage, page);
+        const { hits: images } = response;
+        renderGallery(images);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  });
 }
+
+// async function onLoadMore(event) {
+//   const value = localStorage.getItem('input-value');
+
+//   if (page < pages) page++;
+
+//   try {
+//     const response = await fetchImages(value, perPage, page);
+//     const { hits: images } = response;
+//     renderGallery(images);
+//     smoothScroll();
+//   } catch (error) {
+//     console.log(error.message);
+//   }
+
+//   if (page === pages) {
+//     Notify.info("We're sorry, but you've reached the end of search results.");
+//     loadMoreBtn.classList.add('hidden');
+//   }
+// }
 
 function renderGallery(images) {
   const markup = images.reduce(
@@ -129,12 +165,12 @@ function renderGallery(images) {
   gallery.insertAdjacentHTML('beforeend', markup);
 }
 
-function smoothScroll() {
-  const { height: cardHeight } =
-    gallery.firstElementChild.getBoundingClientRect();
+// function smoothScroll() {
+//   const { height: cardHeight } =
+//     gallery.firstElementChild.getBoundingClientRect();
 
-  window.scrollBy({
-    top: cardHeight * 2,
-    behavior: 'smooth',
-  });
-}
+//   window.scrollBy({
+//     top: cardHeight * 2,
+//     behavior: 'smooth',
+//   });
+// }
