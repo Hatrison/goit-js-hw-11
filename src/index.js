@@ -92,7 +92,7 @@ async function onInfinityLoad(entries, observer) {
         Notify.info(
           "We're sorry, but you've reached the end of search results."
         );
-        return;
+        observer.unobserve(guard);
       }
 
       if (page < pages) page++;
